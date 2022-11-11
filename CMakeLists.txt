@@ -17,12 +17,12 @@ endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-# file(GLOB sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
-# file(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h*")
+file(GLOB sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
+file(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h*")
 
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} ${sources} ${headers})
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${ARMNN_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${ARMNN_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${ARMNN_LIB} ${ARMNN_DELEGATE_LIB} ${ARMNN_ONNXPARSER_LIB} ${ARMNN_LIBARMNNTFLITEPARSER_LIB} -lpthread)
 
