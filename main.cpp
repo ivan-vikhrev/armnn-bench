@@ -42,11 +42,13 @@ using UniformDistribution = typename std::conditional<
     typename std::conditional<std::is_integral<T>::value, std::uniform_int_distribution<T>, void>::type>::type;
 
 template <class T>
-std::vector<T> get_random_data(size_t tensor_size) {
+std::vector<T> get_random_data(size_t tensor_size,
+                               T rand_min = std::numeric_limits<uint8_t>::min(),
+                               T rand_max = std::numeric_limits<uint8_t>::max()) {
     logger::info << "Randomly generated data" << logger::endl;
     std::vector<T> tensor_data(tensor_size);
     std::mt19937 gen(0);
-    UniformDistribution<T> distribution(-1, 1);
+    UniformDistribution<T> distribution(rand_min, rand_max);
     for (size_t i = 0; i < tensor_size; ++i) {
         tensor_data[i] = static_cast<T>(distribution(gen));
     }
@@ -162,11 +164,12 @@ int main(int argv, char **argc) {
         logger::info << "Preparing tensors" << logger::endl;
         int ntensors = 10;
         std::vector<armnn::InputTensors> inputs;
-        std::vector<std::vector<int8_t>> input_beffers;
+        std::vector<std::vector<float>> input_beffers;
         const armnn::TensorShape &input_tensor_shape = input_binding_info[0].second.GetShape();
         for (int i = 0; i < ntensors; ++i) {
-            input_beffers.push_back(get_random_data<int8_t>(input_tensor_shape.GetNumElements()));
-            inputs.push_back({{input_binding_info[0].first, armnn::ConstTensor(input_binding_info[0].second, input_beffers.back().data())}});
+            input_beffers.push_back(get_random_data<float>(input_tensor_shape.GetNumElements(), -1, 1));
+            inputs.push_back({{input_binding_info[0].first,
+                               armnn::ConstTensor(input_binding_info[0].second, input_beffers.back().data())}});
         }
         // set time limit
         uint32_t time_limit_sec = 60;
