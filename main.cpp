@@ -73,11 +73,11 @@ std::string format_double(const double number) {
 
 } // namespace
 
-int main(int argv, char **argc) {
+int main(int argc, char **argv) {
     try {
         logger::info << "Arm-NN version " << ARMNN_VERSION << logger::endl;
         // Import the TensorFlow lite model.
-        std::string model_path = argc[1];
+        std::string model_path = argv[1];
         logger::info << "Creating network from file " << model_path << logger::endl;
 
         armnn::INetworkPtr network = {nullptr, nullptr};
@@ -183,10 +183,15 @@ int main(int argv, char **argc) {
         // optimize the network.
         std::vector<std::string> error_msgs;
         armnn::IRuntimePtr runtime = armnn::IRuntime::Create(armnn::IRuntime::CreationOptions());
-        std::string backend = argc[2];
-        logger::info << "Optimizing network for " << backend << " backend" << logger::endl;
+        logger::info << "Optimizing network for backends: " << argv[2];
+        std::vector<armnn::BackendId> backends = {argv[2]};
+        if (argc == 4) {
+            logger::info << " " << argv[3];
+            backends.push_back(argv[3]);
+        }
+        logger::info << logger::endl;
         armnn::IOptimizedNetworkPtr opt_network = Optimize(*network,
-                                                           {backend},
+                                                           backends,
                                                            runtime->GetDeviceSpec(),
                                                            armnn::OptimizerOptions(),
                                                            armnn::Optional<std::vector<std::string> &>(error_msgs));
@@ -199,7 +204,7 @@ int main(int argv, char **argc) {
 
         std::string err_message;
         armnn::NetworkId net_id{};
-        logger::info << "Loading network to the CPU device" << logger::endl;
+        logger::info << "Loading network" << logger::endl;
         if (armnn::Status::Success != runtime->LoadNetwork(net_id, std::move(opt_network), err_message)) {
             ARMNN_LOG(error) << err_message;
             throw armnn::Exception(err_message);
