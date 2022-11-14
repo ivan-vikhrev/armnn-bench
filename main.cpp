@@ -5,7 +5,9 @@
 #include <armnn/ArmNN.hpp>
 #include <armnn/Exceptions.hpp>
 #include <armnnOnnxParser/IOnnxParser.hpp>
+#include <armnnOnnxParser/Version.hpp>
 #include <armnnTfLiteParser/ITfLiteParser.hpp>
+#include <armnnTfLiteParser/Version.hpp>
 #include <armnnUtils/DataLayoutIndexed.hpp>
 
 #include <chrono>
@@ -73,6 +75,7 @@ std::string format_double(const double number) {
 
 int main(int argv, char **argc) {
     try {
+        logger::info << "Arm-NN version " << ARMNN_VERSION << logger::endl;
         // Import the TensorFlow lite model.
         std::string model_path = argc[1];
         logger::info << "Creating network from file " << model_path << logger::endl;
@@ -85,7 +88,7 @@ int main(int argv, char **argc) {
 
         std::string ext = model_path.substr(model_path.rfind('.') + 1);
         if (ext == "tflite") {
-            logger::info << "Use tflite parser for provided model" << logger::endl;
+            logger::info << "Initialize tflite parser version " << TFLITE_PARSER_VERSION << logger::endl;
             armnnTfLiteParser::ITfLiteParserPtr tflite_parser = armnnTfLiteParser::ITfLiteParser::Create();
             network = tflite_parser->CreateNetworkFromBinaryFile(model_path.c_str());
 
@@ -128,7 +131,7 @@ int main(int argv, char **argc) {
             }
         }
         else if (ext == "onnx") {
-            logger::info << "Use onnx parser for provided model" << logger::endl;
+            logger::info << "Initialize ONNX parser version " << ONNX_PARSER_VERSION << logger::endl;
             armnnOnnxParser::IOnnxParserPtr onnx_parser = armnnOnnxParser::IOnnxParser::Create();
             network = onnx_parser->CreateNetworkFromBinaryFile(model_path.c_str());
 
@@ -177,43 +180,6 @@ int main(int argv, char **argc) {
         else {
             throw std::invalid_argument("Only ONNX and tflite models supported");
         }
-        // armnn::INetworkPtr network = tflite_parser->CreateNetworkFromBinaryFile(model_path.c_str());
-        // logger::info << "Network inputs: " << logger::endl;
-        // std::vector<armnnTfLiteParser::BindingPointInfo> input_binding_info;
-        // std::vector<std::string> input_names = tflite_parser->GetSubgraphInputTensorNames(0);
-        // std::vector<armnn::TensorShape> input_shapes;
-        // for (auto input_name : input_names) {
-        //     input_binding_info.push_back(std::move(tflite_parser->GetNetworkInputBindingInfo(0, input_name)));
-        //     const armnn::DataType data_type = input_binding_info.back().second.GetDataType();
-        //     const armnn::TensorShape input_shape = input_binding_info.back().second.GetShape();
-        //     input_shapes.push_back(input_shape);
-
-        //     logger::info << "\t" << input_name << " " << str_types.at(data_type) << " [";
-        //     int i = 0;
-        //     for (; i < (int)input_shape.GetNumDimensions() - 1; ++i) {
-        //         logger::info << input_shape[i] << ",";
-        //     }
-        //     logger::info << input_shape[i] << "]" << logger::endl;
-        // }
-
-        // logger::info << "Network outputs: " << logger::endl;
-        // std::vector<armnnTfLiteParser::BindingPointInfo> output_binding_info;
-        // std::vector<std::string> output_names = tflite_parser->GetSubgraphOutputTensorNames(0);
-        // std::vector<armnn::TensorShape> output_shapes;
-        // for (auto output_name : output_names) {
-        //     output_binding_info.push_back(std::move(tflite_parser->GetNetworkOutputBindingInfo(0, output_name)));
-        //     const armnn::DataType data_type = output_binding_info.back().second.GetDataType();
-        //     const armnn::TensorShape output_shape = output_binding_info.back().second.GetShape();
-        //     output_shapes.push_back(output_shape);
-
-        //     logger::info << "\t" << output_name << " " << str_types.at(data_type) << " [";
-        //     int i = 0;
-        //     for (; i < (int)output_shape.GetNumDimensions() - 1; ++i) {
-        //         logger::info << output_shape[i] << ",";
-        //     }
-        //     logger::info << output_shape[i] << "]" << logger::endl;
-        // }
-
         // optimize the network.
         std::vector<std::string> error_msgs;
         armnn::IRuntimePtr runtime = armnn::IRuntime::Create(armnn::IRuntime::CreationOptions());
