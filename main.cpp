@@ -234,12 +234,19 @@ int main(int argc, char **argv) {
         logger::info << "Preparing input tensors" << logger::endl;
         int ntensors = 10;
         std::vector<armnn::InputTensors> inputs;
-        std::vector<std::vector<float>> input_beffers;
+        std::vector<std::vector<float>> input_buffers;
         const armnn::TensorShape &input_tensor_shape = input_shapes[0];
+        int id = 3;
+        if (argc == 6) {
+            id = 4;
+        }
+        int rand_min = std::atoi(argv[id]);
+        int rand_max = std::atoi(argv[id + 1]);
+        logger::info << "Random values from " << rand_min << " to " << rand_max << logger::endl;
         for (int i = 0; i < ntensors; ++i) {
-            input_beffers.push_back(get_random_data<float>(input_tensor_shape.GetNumElements(), -3, 3));
+            input_buffers.push_back(get_random_data<float>(input_tensor_shape.GetNumElements(), rand_min, rand_max));
             inputs.push_back(
-                {{input_binding_id[0], armnn::ConstTensor(input_tensor_info[0], input_beffers.back().data())}});
+                {{input_binding_id[0], armnn::ConstTensor(input_tensor_info[0], input_buffers.back().data())}});
         }
         logger::info << "Created " << ntensors << " randomly generated tensors" << logger::endl;
         // set time limit
